@@ -3,10 +3,10 @@ package dao
 import (
 	"errors"
 	"fmt"
-	"github.com/zhanhuipinggit/kingGataway/dto"
-	"github.com/zhanhuipinggit/kingGataway/public"
 	"github.com/e421083458/gorm"
 	"github.com/gin-gonic/gin"
+	"github.com/zhanhuipinggit/kingGataway/dto"
+	"github.com/zhanhuipinggit/kingGataway/public"
 	"time"
 )
 
@@ -50,4 +50,8 @@ func (t *Admin) Find(c *gin.Context, tx *gorm.DB, search *Admin) (*Admin, error)
 		return nil, err
 	}
 	return out, nil
+}
+
+func (t *Admin) Save(c *gin.Context, tx *gorm.DB) error {
+	return tx.SetCtx(public.GetGinTraceContext(c)).Save(t).Error
 }

@@ -34,6 +34,14 @@ definitions:
         example: admin
         type: string
     type: object
+  dto.ChangePwdInput:
+    properties:
+      password:
+        example: "123456"
+        type: string
+    required:
+    - password
+    type: object
   dto.DemoInput:
     properties:
       age:
@@ -87,6 +95,34 @@ paths:
       summary: 获取用户信息
       tags:
       - 获取用户信息
+  /admin/change_pwd:
+    post:
+      consumes:
+      - application/json
+      description: 修改密码
+      operationId: /admin/change_pwd
+      parameters:
+      - description: body
+        in: body
+        name: polygon
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePwdInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 修改密码
+      tags:
+      - 管理员接口
   /admin_login/login:
     post:
       consumes:
