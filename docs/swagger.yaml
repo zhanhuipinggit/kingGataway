@@ -1,0 +1,167 @@
+definitions:
+  dto.AdminInfoOutput:
+    properties:
+      avatar:
+        type: string
+      id:
+        type: integer
+      introduction:
+        type: string
+      login_time:
+        type: string
+      roles:
+        items:
+          type: string
+        type: array
+      user_name:
+        type: string
+    type: object
+  dto.AdminLoginInput:
+    properties:
+      password:
+        example: "123456"
+        type: string
+      user_name:
+        example: admin
+        type: string
+    required:
+    - password
+    - user_name
+    type: object
+  dto.AdminLoginOutput:
+    properties:
+      token:
+        example: admin
+        type: string
+    type: object
+  dto.DemoInput:
+    properties:
+      age:
+        example: 20
+        type: integer
+      name:
+        example: 姓名
+        type: string
+      passwd:
+        example: "123456"
+        type: string
+    required:
+    - age
+    - name
+    - passwd
+    type: object
+  middleware.Response:
+    properties:
+      data:
+        type: object
+      errmsg:
+        type: string
+      errno:
+        type: integer
+      stack:
+        type: object
+      trace_id:
+        type: object
+    type: object
+info:
+  contact: {}
+paths:
+  /admin/admin_info:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户信息
+      operationId: /admin/admin_info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AdminInfoOutput'
+              type: object
+      summary: 获取用户信息
+      tags:
+      - 获取用户信息
+  /admin_login/login:
+    post:
+      consumes:
+      - application/json
+      description: 管理员登录
+      operationId: /admin_login/login
+      parameters:
+      - description: body
+        in: body
+        name: polygon
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AdminLoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AdminLoginOutput'
+              type: object
+      summary: 管理员登录
+      tags:
+      - 管理员接口
+  /admin_login/login_out:
+    get:
+      consumes:
+      - application/json
+      description: 管理员退出
+      operationId: /admin_login//login_out
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 管理员退出
+      tags:
+      - 管理员退出
+  /demo/bind:
+    post:
+      consumes:
+      - application/json
+      description: 测试数据绑定
+      operationId: /demo/bind
+      parameters:
+      - description: body
+        in: body
+        name: polygon
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DemoInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DemoInput'
+              type: object
+      summary: 测试数据绑定
+      tags:
+      - 用户
+swagger: "2.0"
