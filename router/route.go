@@ -1,14 +1,14 @@
 package router
 
 import (
-	"github.com/zhanhuipinggit/kingGataway/controller"
-	"github.com/zhanhuipinggit/kingGataway/docs"
-	"github.com/zhanhuipinggit/kingGataway/middleware"
 	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	"github.com/zhanhuipinggit/kingGataway/controller"
+	"github.com/zhanhuipinggit/kingGataway/docs"
+	"github.com/zhanhuipinggit/kingGataway/middleware"
 	"log"
 )
 
@@ -133,6 +133,20 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	)
 	{
 		controller.AdminRegister(adminRouter)
+	}
+
+
+	serviceRouter := router.Group("/service")
+
+	serviceRouter.Use(
+		sessions.Sessions("mysession",store),
+		middleware.RecoveryMiddleware(),
+		middleware.RequestLog(),
+		middleware.SessionAuthMiddleware(),
+		middleware.TranslationMiddleware(),
+	)
+	{
+		controller.ServiceRegister(serviceRouter)
 	}
 
 

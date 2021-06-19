@@ -26,6 +26,12 @@
         on = false
         color = false
 
+[cluster]
+    cluster_ip="127.0.0.1"
+    cluster_port="8880"
+    cluster_ssl_port="4880"
+
+
 [swagger]
     title="gin_scaffold swagger API"
     desc="This is a sample server celler server."
