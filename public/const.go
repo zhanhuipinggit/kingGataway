@@ -14,3 +14,11 @@ const (
 
 
 )
+
+var (
+	LoadTypeMap =map[int]string{
+		LoadTypeHTTP: "HTTP",
+		LoadTypeTCP: "TCP",
+		LoadTypeGRPC: "GRPC",
+	}
+)

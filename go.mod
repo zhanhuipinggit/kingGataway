@@ -15,6 +15,7 @@ require (
 	github.com/gorilla/sessions v1.1.3 // indirect
 	github.com/leodido/go-urn v1.1.0 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/spf13/viper v1.3.2
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.5

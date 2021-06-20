@@ -18,6 +18,15 @@ CreatedAt time.Time `json:"create_at" gorm:"column:create_at" description:"创�
 IsDelete int8 `json:"is_delete" gorm:"column:is_delete" description:"是否删除"`
 }
 
+func (t *ServiceInfo) GroupByLoadType(c *gin.Context, tx *gorm.DB) ([]dto.DashServiceStatItemOutput, error) {
+	list := []dto.DashServiceStatItemOutput{}
+	query := tx.SetCtx(public.GetGinTraceContext(c))
+	if err := query.Table(t.TableName()).Where("is_delete=0").Select("load_type, count(*) as value").Group("load_type").Scan(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 func (t *ServiceInfo) TableName() string {
 	return "gateway_service_info"
 }
