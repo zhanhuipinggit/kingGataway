@@ -23,6 +23,14 @@ func (t *ServiceInfo) TableName() string {
 }
 
 func (t *ServiceInfo) ServiceDetail (c *gin.Context, tx *gorm.DB,search *ServiceInfo) (*ServiceDetail,error) {
+	if search.ServiceName == "" {
+		info,err := t.Find(c,tx,search)
+		if err != nil {
+			return nil,err
+		}
+		search = info
+	}
+
 	httpRule:=&HttpRule{ServiceID: search.ID}
 	httpRule,err := httpRule.Find(c,tx,httpRule)
 	if err!=nil && err != gorm.ErrRecordNotFound {
@@ -54,7 +62,7 @@ func (t *ServiceInfo) ServiceDetail (c *gin.Context, tx *gorm.DB,search *Service
 
 	detail := &ServiceDetail{
 		Info:          search,
-		HTTPPRule:     httpRule,
+		HTTPRule:     httpRule,
 		GRPCRule:      grpcRule,
 		TCPRule:       tcpRule,
 		LoadBalance:   loadBalance,
