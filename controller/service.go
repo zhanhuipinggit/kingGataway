@@ -17,7 +17,7 @@ type ServiceController struct {}
 func ServiceRegister(group *gin.RouterGroup)  {
 	service := &ServiceController{}
 	group.GET("/service_list",service.ServiceList)
-	group.POST("/service_delete",service.ServiceDelete)
+	group.GET("/service_delete",service.ServiceDelete)
 	group.GET("/service_detail", service.ServiceDetail)
 	group.POST("/service_add_http",service.ServiceAddHTTP)
 	group.POST("/service_update_http",service.ServiceUpdateHTTP)
