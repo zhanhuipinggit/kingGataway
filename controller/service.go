@@ -535,6 +535,7 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 			ServiceName: listItem.ServiceName,
 			ServiceDesc: listItem.ServiceDesc,
 			ServiceAddr: serviceAddr,
+			LoadType: serviceDetail.Info.LoadType,
 			Qps:0,
 			Qpd:0,
 			TotalNode: len(ipList),
