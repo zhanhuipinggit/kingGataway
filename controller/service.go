@@ -10,6 +10,7 @@ import (
 	"github.com/zhanhuipinggit/kingGataway/middleware"
 	"github.com/zhanhuipinggit/kingGataway/public"
 	"strings"
+	"time"
 )
 
 type ServiceController struct {}
@@ -21,13 +22,57 @@ func ServiceRegister(group *gin.RouterGroup)  {
 	group.GET("/service_detail", service.ServiceDetail)
 	group.POST("/service_add_http",service.ServiceAddHTTP)
 	group.POST("/service_update_http",service.ServiceUpdateHTTP)
-	//group.GET("/service_stat", service.ServiceStat)
+	group.GET("/service_stat", service.ServiceStat)
 
 	group.POST("/service_add_tcp", service.ServiceAddTcp)
 	group.POST("/service_update_tcp", service.ServiceUpdateTcp)
 	group.POST("/service_add_grpc", service.ServiceAddGrpc)
 	group.POST("/service_update_grpc", service.ServiceUpdateGrpc)
 
+}
+
+func (service *ServiceController) ServiceStat(c *gin.Context) {
+	params := &dto.ServiceDeleteInput{}
+	if err := params.ServiceDeleteParam(c); err != nil {
+		middleware.ResponseError(c, 2000, err)
+		return
+	}
+
+	//读取基本信息
+	//tx, err := lib.GetGormPool("default")
+	//if err != nil {
+	//	middleware.ResponseError(c, 2001, err)
+	//	return
+	//}
+	//serviceInfo := &dao.ServiceInfo{ID: params.ID}
+	//serviceDetail, err := serviceInfo.ServiceDetail(c, tx, serviceInfo)
+	//if err != nil {
+	//	middleware.ResponseError(c, 2003, err)
+	//	return
+	//}
+
+	//counter, err := public.FlowCounterHandler.GetCounter(public.FlowServicePrefix + serviceDetail.Info.ServiceName)
+	//if err != nil {
+	//	middleware.ResponseError(c, 2004, err)
+	//	return
+	//}
+	//今日流量全天小时级访问统计
+	todayStat := []int64{}
+	for i := 0; i <= time.Now().In(lib.TimeLocation).Hour(); i++ {
+		todayStat = append(todayStat, 2)
+	}
+
+	//昨日流量全天小时级访问统计
+	yesterdayStat := []int64{}
+	for i := 0; i <= 23; i++ {
+		yesterdayStat = append(yesterdayStat, 1)
+	}
+	stat := dto.StatisticsOutput{
+		Today:     todayStat,
+		Yesterday: yesterdayStat,
+	}
+	middleware.ResponseSuccess(c, stat)
+	return
 }
 
 
@@ -535,6 +580,7 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 			ServiceName: listItem.ServiceName,
 			ServiceDesc: listItem.ServiceDesc,
 			ServiceAddr: serviceAddr,
+			LoadType: serviceDetail.Info.LoadType,
 			Qps:0,
 			Qpd:0,
 			TotalNode: len(ipList),
