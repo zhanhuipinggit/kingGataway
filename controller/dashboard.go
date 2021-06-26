@@ -15,8 +15,8 @@ type DashboardController struct {}
 
 func DashboardRegister(group *gin.RouterGroup)  {
 	dashboard := &DashboardController{}
-	group.GET("/dashboard",dashboard.Dashboard)
-	group.GET("/flowStat",dashboard.FlowStat)
+	group.GET("/panel_group_data",dashboard.Dashboard)
+	group.GET("/flow_stat",dashboard.FlowStat)
 	group.GET("/service_stat",dashboard.ServiceStat)
 }
 
