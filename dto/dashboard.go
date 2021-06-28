@@ -1,10 +1,10 @@
 package dto
 
 type PanelGroupData struct {
-	ServiceNum int64 `json:"service_num"`
-	AppNum int64 `json:"app_num"`
-	CurrentQPS int64 `json:"current_qps"`
-	TodayRequestNum int64 `json:"today_request_num"`
+	ServiceNum int64 `json:"serviceNum"`
+	AppNum int64 `json:"appNum"`
+	CurrentQPS int64 `json:"currentQPS"`
+	TodayRequestNum int64 `json:"todayRequestNum"`
 }
 
 type DashServiceStatItemOutput struct {
