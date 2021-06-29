@@ -1,11 +1,12 @@
 package dao
 
 import (
-	//"fmt"
-	"github.com/zhanhuipinggit/kingGataway/public"
-	//"github.com/zhanhuipinggit/kingGataway/reverse_proxy/load_balance"
+	"fmt"
 	"github.com/e421083458/gorm"
 	"github.com/gin-gonic/gin"
+	//"fmt"
+	"github.com/zhanhuipinggit/kingGataway/public"
+	"github.com/zhanhuipinggit/kingGataway/reverse_proxy/load_balance"
 	"net"
 	"net/http"
 	"strings"
@@ -55,69 +56,69 @@ func (t *LoadBalance) GetWeightListByModel() []string {
 	return strings.Split(t.WeightList, ",")
 }
 
-//var LoadBalancerHandler *LoadBalancer
+var LoadBalancerHandler *LoadBalancer
 
-//type LoadBalancer struct {
-//	LoadBanlanceMap   map[string]*LoadBalancerItem
-//	LoadBanlanceSlice []*LoadBalancerItem
-//	Locker            sync.RWMutex
-//}
+type LoadBalancer struct {
+	LoadBanlanceMap   map[string]*LoadBalancerItem
+	LoadBanlanceSlice []*LoadBalancerItem
+	Locker            sync.RWMutex
+}
 
-//type LoadBalancerItem struct {
-//	LoadBanlance load_balance.LoadBalance
-//	ServiceName  string
-//}
+type LoadBalancerItem struct {
+	LoadBanlance load_balance.LoadBalance
+	ServiceName  string
+}
 
-//func NewLoadBalancer() *LoadBalancer {
-//	return &LoadBalancer{
-//		LoadBanlanceMap:   map[string]*LoadBalancerItem{},
-//		LoadBanlanceSlice: []*LoadBalancerItem{},
-//		Locker:            sync.RWMutex{},
-//	}
-//}
+func NewLoadBalancer() *LoadBalancer {
+	return &LoadBalancer{
+		LoadBanlanceMap:   map[string]*LoadBalancerItem{},
+		LoadBanlanceSlice: []*LoadBalancerItem{},
+		Locker:            sync.RWMutex{},
+	}
+}
 
-//func init() {
-//	LoadBalancerHandler = NewLoadBalancer()
-//}
+func init() {
+	LoadBalancerHandler = NewLoadBalancer()
+}
 
-//func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
-//	for _, lbrItem := range lbr.LoadBanlanceSlice {
-//		if lbrItem.ServiceName == service.Info.ServiceName {
-//			return lbrItem.LoadBanlance, nil
-//		}
-//	}
-//	schema := "http://"
-//	if service.HTTPRule.NeedHttps == 1 {
-//		schema = "https://"
-//	}
-//	if service.Info.LoadType==public.LoadTypeTCP || service.Info.LoadType==public.LoadTypeGRPC{
-//		schema = ""
-//	}
-//	ipList := service.LoadBalance.GetIPListByModel()
-//	weightList := service.LoadBalance.GetWeightListByModel()
-//	ipConf := map[string]string{}
-//	for ipIndex, ipItem := range ipList {
-//		ipConf[ipItem] = weightList[ipIndex]
-//	}
-//	//fmt.Println("ipConf", ipConf)
-//	mConf, err := load_balance.NewLoadBalanceCheckConf(fmt.Sprintf("%s%s", schema, "%s"), ipConf)
-//	if err != nil {
-//		return nil, err
-//	}
-//	lb := load_balance.LoadBanlanceFactorWithConf(load_balance.LbType(service.LoadBalance.RoundType), mConf)
-//
-//	//save to map and slice
-//	lbItem := &LoadBalancerItem{
-//		LoadBanlance: lb,
-//		ServiceName:  service.Info.ServiceName,
-//	}
-//	lbr.LoadBanlanceSlice = append(lbr.LoadBanlanceSlice, lbItem)
-//
-//	lbr.Locker.Lock()
-//	defer lbr.Locker.Unlock()
-//	lbr.LoadBanlanceMap[service.Info.ServiceName] = lbItem
-//	return lb, nil
-//}
+func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
+	for _, lbrItem := range lbr.LoadBanlanceSlice {
+		if lbrItem.ServiceName == service.Info.ServiceName {
+			return lbrItem.LoadBanlance, nil
+		}
+	}
+	schema := "http://"
+	if service.HTTPRule.NeedHttps == 1 {
+		schema = "https://"
+	}
+	if service.Info.LoadType==public.LoadTypeTCP || service.Info.LoadType==public.LoadTypeGRPC{
+		schema = ""
+	}
+	ipList := service.LoadBalance.GetIPListByModel()
+	weightList := service.LoadBalance.GetWeightListByModel()
+	ipConf := map[string]string{}
+	for ipIndex, ipItem := range ipList {
+		ipConf[ipItem] = weightList[ipIndex]
+	}
+	//fmt.Println("ipConf", ipConf)
+	mConf, err := load_balance.NewLoadBalanceCheckConf(fmt.Sprintf("%s%s", schema, "%s"), ipConf)
+	if err != nil {
+		return nil, err
+	}
+	lb := load_balance.LoadBanlanceFactorWithConf(load_balance.LbType(service.LoadBalance.RoundType), mConf)
+
+	//save to map and slice
+	lbItem := &LoadBalancerItem{
+		LoadBanlance: lb,
+		ServiceName:  service.Info.ServiceName,
+	}
+	lbr.LoadBanlanceSlice = append(lbr.LoadBanlanceSlice, lbItem)
+
+	lbr.Locker.Lock()
+	defer lbr.Locker.Unlock()
+	lbr.LoadBanlanceMap[service.Info.ServiceName] = lbItem
+	return lb, nil
+}
 
 var TransportorHandler *Transportor
 
