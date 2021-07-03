@@ -14,26 +14,29 @@
         "192.168.1.1"
     ]
 
+[session]
+    redis_server = "127.0.0.1:6379"   #redis session server
+    redis_password = ""
+
 [log]
     log_level = "trace"         #日志打印最低级别
     [log.file_writer]           #文件写入配置
         on = true
-        log_path = "./logs/gin_scaffold.inf.log"
-        rotate_log_path = "./logs/gin_scaffold.inf.log.%Y%M%D%H"
-        wf_log_path = "./logs/gin_scaffold.wf.log"
-        rotate_wf_log_path = "./logs/gin_scaffold.wf.log.%Y%M%D%H"
+        log_path = "./logs/go_gateway.inf.log"
+        rotate_log_path = "./logs/go_gateway.inf.log.%Y%M%D%H"
+        wf_log_path = "./logs/go_gateway.wf.log"
+        rotate_wf_log_path = "./logs/go_gateway.wf.log.%Y%M%D%H"
     [log.console_writer]        #工作台输出
         on = false
         color = false
 
 [cluster]
     cluster_ip="127.0.0.1"
-    cluster_port="8880"
-    cluster_ssl_port="4880"
-
+    cluster_port="8080"
+    cluster_ssl_port="4433"
 
 [swagger]
-    title="gin_scaffold swagger API"
+    title="go_gateway swagger API"
     desc="This is a sample server celler server."
     host="127.0.0.1:8880"
     base_path=""

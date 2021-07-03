@@ -1,26 +1,32 @@
 package reverse_proxy
 
 import (
+	"bytes"
+	"compress/gzip"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/zhanhuipinggit/kingGataway/middleware"
 	"github.com/zhanhuipinggit/kingGataway/reverse_proxy/load_balance"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
-func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, trans *http.Transport) *httputil.ReverseProxy {
+
+func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance,trans *http.Transport) *httputil.ReverseProxy {
 	//请求协调者
 	director := func(req *http.Request) {
 		nextAddr, err := lb.Get(req.URL.String())
-		//todo 优化点3
-		if err != nil || nextAddr=="" {
-			panic("get next addr fail")
+		log.Printf(nextAddr)
+		if err != nil {
+			log.Fatal("get next addr fail")
 		}
 		target, err := url.Parse(nextAddr)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		targetQuery := target.RawQuery
 		req.URL.Scheme = target.Scheme
@@ -39,42 +45,43 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 
 	//更改内容
 	modifyFunc := func(resp *http.Response) error {
+
 		if strings.Contains(resp.Header.Get("Connection"), "Upgrade") {
 			return nil
 		}
+		var payload []byte
+		var readErr error
 
-		//todo 优化点2
-		//var payload []byte
-		//var readErr error
-		//
-		//if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
-		//	gr, err := gzip.NewReader(resp.Body)
-		//	if err != nil {
-		//		return err
-		//	}
-		//	payload, readErr = ioutil.ReadAll(gr)
-		//	resp.Header.Del("Content-Encoding")
-		//} else {
-		//	payload, readErr = ioutil.ReadAll(resp.Body)
-		//}
-		//if readErr != nil {
-		//	return readErr
-		//}
-		//
-		//c.Set("status_code", resp.StatusCode)
-		//c.Set("payload", payload)
-		//resp.Body = ioutil.NopCloser(bytes.NewBuffer(payload))
-		//resp.ContentLength = int64(len(payload))
-		//resp.Header.Set("Content-Length", strconv.FormatInt(int64(len(payload)), 10))
+		if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
+			gr, err := gzip.NewReader(resp.Body)
+			if err != nil {
+				return err
+			}
+			payload, readErr = ioutil.ReadAll(gr)
+			resp.Header.Del("Content-Encoding")
+		} else {
+			payload, readErr = ioutil.ReadAll(resp.Body)
+		}
+		if readErr != nil {
+			return readErr
+		}
+
+		c.Set("status_code", resp.StatusCode)
+		c.Set("payload", payload)
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(payload))
+		resp.ContentLength = int64(len(payload))
+		resp.Header.Set("Content-Length", strconv.FormatInt(int64(len(payload)), 10))
 		return nil
 	}
 
 	//错误回调 ：关闭real_server时测试，错误回调
 	//范围：transport.RoundTrip发生的错误、以及ModifyResponse发生的错误
 	errFunc := func(w http.ResponseWriter, r *http.Request, err error) {
-		middleware.ResponseError(c,999,err)
+		//todo record error log
+		fmt.Println(err)
 	}
-	return &httputil.ReverseProxy{Director: director, ModifyResponse: modifyFunc, ErrorHandler: errFunc}
+
+	return &httputil.ReverseProxy{Director: director, Transport: trans, ModifyResponse: modifyFunc, ErrorHandler: errFunc}
 }
 
 func singleJoiningSlash(a, b string) string {
@@ -88,3 +95,4 @@ func singleJoiningSlash(a, b string) string {
 	}
 	return a + b
 }
+

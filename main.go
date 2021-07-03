@@ -44,7 +44,7 @@ func main()  {
 
 		router.HttpServerStop()
 	}else {
-		lib.InitModule(*config,[]string{"base","mysql","redis",})
+		lib.InitModule(*config,[]string{"base","mysql","redis"})
 		defer lib.Destroy()
 		dao.ServiceManagerHandler.LoadOnce()
 
