@@ -159,11 +159,11 @@ func (t *Transport) GetTrans(service *ServiceDetail)  (*http.Transport,error) {
 
 	trans := &http.Transport{
 		DialContext: (&net.Dialer{
-			Timeout:   time.Duration(service.LoadBalance.UpstreamConnectTimeout), //连接超时
+			Timeout:   time.Duration(service.LoadBalance.UpstreamConnectTimeout)*time.Second, //连接超时
 		}).DialContext,
 		MaxIdleConns:          service.LoadBalance.UpstreamMaxIdle,              //最大空闲连接
-		IdleConnTimeout:       time.Duration(service.LoadBalance.UpstreamIdleTimeout), //空闲超时时间
-		ResponseHeaderTimeout: time.Duration(service.LoadBalance.UpstreamHeaderTimeout),
+		IdleConnTimeout:       time.Duration(service.LoadBalance.UpstreamIdleTimeout)*time.Second, //空闲超时时间
+		ResponseHeaderTimeout: time.Duration(service.LoadBalance.UpstreamHeaderTimeout)*time.Second,
 	}
 
 	TransItem := &TransportItem{
