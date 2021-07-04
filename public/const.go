@@ -12,6 +12,12 @@ const (
 	HTTPPRuleTypePrefixURL = 0
 	HTTPRuleTypeDomain = 1
 
+	RedisFlowDayKey = "flow_day_count"
+	RedisFlowHourKey = "flow_hour_count"
+
+	FlowTotal = "flow_total"
+	FlowCountServicePrefix = "flow_service_"
+	FlowCountAppPrefix = "flow_app_"
 
 )
 
