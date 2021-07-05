@@ -37,3 +37,32 @@ func HTTPWhileListMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func HTTPBlackMiddleware() gin.HandlerFunc  {
+	return func(c *gin.Context) {
+		serverInterface,ok := c.Get("service")
+		if !ok {
+			middleware.ResponseError(c,2001,errors.New("service not found"))
+			c.Abort()
+			return
+		}
+
+		serviceDetail := serverInterface.(*dao.ServiceDetail)
+
+		ipBlackList := []string{}
+		if serviceDetail.AccessControl.BlackList != "" {
+			ipBlackList = strings.Split(serviceDetail.AccessControl.BlackList,",")
+		}
+
+		if serviceDetail.AccessControl.OpenAuth == 1 && len(ipBlackList)>0 {
+			if public.InStringSlice(ipBlackList,c.ClientIP()) {
+				middleware.ResponseError(c,3001,errors.New( fmt.Sprintf("%s not in white ip list",c.ClientIP())))
+				c.Abort()
+				return
+			}
+		}
+		c.Next()
+
+	}
+}
+
