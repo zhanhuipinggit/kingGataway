@@ -39,33 +39,39 @@ func (service *ServiceController) ServiceStat(c *gin.Context) {
 	}
 
 	//读取基本信息
-	//tx, err := lib.GetGormPool("default")
-	//if err != nil {
-	//	middleware.ResponseError(c, 2001, err)
-	//	return
-	//}
-	//serviceInfo := &dao.ServiceInfo{ID: params.ID}
-	//serviceDetail, err := serviceInfo.ServiceDetail(c, tx, serviceInfo)
-	//if err != nil {
-	//	middleware.ResponseError(c, 2003, err)
-	//	return
-	//}
+	tx, err := lib.GetGormPool("default")
+	if err != nil {
+		middleware.ResponseError(c, 2001, err)
+		return
+	}
+	serviceInfo := &dao.ServiceInfo{ID: params.ID}
+	serviceDetail, err := serviceInfo.ServiceDetail(c, tx, serviceInfo)
+	if err != nil {
+		middleware.ResponseError(c, 2003, err)
+		return
+	}
 
-	//counter, err := public.FlowCounterHandler.GetCounter(public.FlowServicePrefix + serviceDetail.Info.ServiceName)
-	//if err != nil {
-	//	middleware.ResponseError(c, 2004, err)
-	//	return
-	//}
+	counter, err := public.FlowCounterHandler.GetCounter(public.FlowCountServicePrefix + serviceDetail.Info.ServiceName)
+	if err != nil {
+		middleware.ResponseError(c, 2004, err)
+		return
+	}
 	//今日流量全天小时级访问统计
 	todayStat := []int64{}
-	for i := 0; i <= time.Now().In(lib.TimeLocation).Hour(); i++ {
-		todayStat = append(todayStat, 2)
+	currentTime := time.Now()
+	for i := 0; i <= currentTime.Hour(); i++ {
+		dateTime := time.Date(currentTime.Year(),currentTime.Month(),currentTime.Day(),i,0,0,0,lib.TimeLocation)
+		hourDate,_ :=counter.GetHourData(dateTime)
+		todayStat = append(todayStat, hourDate)
 	}
 
 	//昨日流量全天小时级访问统计
 	yesterdayStat := []int64{}
+	yesterTime := currentTime.Add(-1*time.Duration(time.Hour*24))
 	for i := 0; i <= 23; i++ {
-		yesterdayStat = append(yesterdayStat, 1)
+		dateTime := time.Date(yesterTime.Year(),currentTime.Month(),yesterTime.Day(),i,0,0,0,lib.TimeLocation)
+		hourDate,_ :=counter.GetHourData(dateTime)
+		yesterdayStat = append(yesterdayStat, hourDate)
 	}
 	stat := dto.StatisticsOutput{
 		Today:     todayStat,
@@ -575,14 +581,20 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 		}
 
 		ipList :=serviceDetail.LoadBalance.GetIPListByModel()
+		counter,err := public.FlowCounterHandler.GetCounter(public.FlowCountServicePrefix+listItem.ServiceName)
+		if err != nil {
+			middleware.ResponseError(c,2004,err)
+			return
+		}
+
 		outItem:=dto.ServiceListItemOutput{
 			ID: listItem.ID,
 			ServiceName: listItem.ServiceName,
 			ServiceDesc: listItem.ServiceDesc,
 			ServiceAddr: serviceAddr,
 			LoadType: serviceDetail.Info.LoadType,
-			Qps:0,
-			Qpd:0,
+			Qps:counter.QPS,
+			Qpd:counter.TotalCount,
 			TotalNode: len(ipList),
 		}
 

@@ -59,23 +59,30 @@ func (service *DashboardController) ServiceStat(c *gin.Context) {
 
 func (admin *DashboardController) FlowStat(c *gin.Context) {
 
-	//今日流量全天小时级访问统计
-	todayStat := []int64{}
-	for i := 0; i <= time.Now().In(lib.TimeLocation).Hour(); i++ {
-		todayStat = append(todayStat, 0)
+	counter, err := public.FlowCounterHandler.GetCounter(public.FlowTotal)
+	if err != nil {
+		middleware.ResponseError(c, 2001, err)
+		return
+	}
+	todayList := []int64{}
+	currentTime := time.Now()
+	for i := 0; i <= currentTime.Hour(); i++ {
+		dateTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), i, 0, 0, 0, lib.TimeLocation)
+		hourData, _ := counter.GetHourData(dateTime)
+		todayList = append(todayList, hourData)
 	}
 
-	//昨日流量全天小时级访问统计
-	yesterdayStat := []int64{}
+	yesterdayList := []int64{}
+	yesterTime := currentTime.Add(-1 * time.Duration(time.Hour*24))
 	for i := 0; i <= 23; i++ {
-		yesterdayStat = append(yesterdayStat, 0)
+		dateTime := time.Date(yesterTime.Year(), yesterTime.Month(), yesterTime.Day(), i, 0, 0, 0, lib.TimeLocation)
+		hourData, _ := counter.GetHourData(dateTime)
+		yesterdayList = append(yesterdayList, hourData)
 	}
-	stat := dto.StatisticsOutput{
-		Today:     todayStat,
-		Yesterday: yesterdayStat,
-	}
-	middleware.ResponseSuccess(c, stat)
-	return
+	middleware.ResponseSuccess(c, &dto.ServiceStatOutput{
+		Today:     todayList,
+		Yesterday: yesterdayList,
+	})
 }
 
 
@@ -84,23 +91,26 @@ func (admin *DashboardController) FlowStat(c *gin.Context) {
 
 func (service *DashboardController) Dashboard(c *gin.Context) {
 
-	tx,err := lib.GetGormPool("default")
+	tx, err := lib.GetGormPool("default")
 	if err != nil {
-		middleware.ResponseError(c,2001,err)
+		middleware.ResponseError(c, 2001, err)
 		return
 	}
-
 	serviceInfo := &dao.ServiceInfo{}
-	_,serviceNum,err := serviceInfo.PageList(c,tx,&dto.ServiceListInput{PageSize: 1,PageNo: 1})
-	if err !=nil {
-		middleware.ResponseError(c,2002,err)
+	_, serviceNum, err := serviceInfo.PageList(c, tx, &dto.ServiceListInput{PageSize: 1, PageNo: 1})
+	if err != nil {
+		middleware.ResponseError(c, 2002, err)
 		return
 	}
-
 	app := &dao.App{}
-	_,appNum,err := app.APPList(c,tx,&dto.APPListInput{PageNo: 1,PageSize: 1})
-	if err !=nil {
-		middleware.ResponseError(c,2002,err)
+	_, appNum, err := app.APPList(c, tx, &dto.APPListInput{PageNo: 1, PageSize: 1})
+	if err != nil {
+		middleware.ResponseError(c, 2002, err)
+		return
+	}
+	counter, err := public.FlowCounterHandler.GetCounter(public.FlowTotal)
+	if err != nil {
+		middleware.ResponseError(c, 2003, err)
 		return
 	}
 
@@ -109,8 +119,8 @@ func (service *DashboardController) Dashboard(c *gin.Context) {
 	out := &dto.PanelGroupData{
 		ServiceNum: serviceNum,
 		AppNum: appNum,
-		TodayRequestNum: 0,
-		CurrentQPS: 0,
+		TodayRequestNum: counter.TotalCount,
+		CurrentQPS:      counter.QPS,
 
 
 	}
