@@ -21,15 +21,6 @@ func AdminRegister(group *gin.RouterGroup)  {
 
 }
 
-// AdminInfo godoc
-// @Summary 获取用户信息
-// @Description 获取用户信息
-// @Tags 获取用户信息
-// @ID /admin/admin_info
-// @Accept  json
-// @Produce  json
-// @Success 200 {object} middleware.Response{data=dto.AdminInfoOutput} "success"
-// @Router /admin/admin_info [get]
 func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
 
 	sess:=sessions.Default(c)
@@ -52,16 +43,6 @@ func (adminlogin *AdminController) AdminInfo(c *gin.Context) {
 }
 
 
-// ChangePwd godoc
-// @Summary 修改密码
-// @Description 修改密码
-// @Tags 管理员接口
-// @ID /admin/change_pwd
-// @Accept  json
-// @Produce  json
-// @Param polygon body dto.ChangePwdInput true "body"
-// @Success 200 {object} middleware.Response{data=string} "success"
-// @Router /admin/change_pwd [post]
 func (adminlogin *AdminController) ChangePwd(c *gin.Context) {
 
 	params := &dto.ChangePwdInput{}
